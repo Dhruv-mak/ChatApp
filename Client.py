@@ -44,7 +44,6 @@ class MainWindow(QMainWindow):
         self.list_msgs.addItem("Hello")
         self.list_msgs.setGeometry(QRect(260, 10, 521, 501))
 
-
     def test(self):
         current = self.list_contact.currentItem().text()
         mx = msg()
@@ -56,7 +55,7 @@ class MainWindow(QMainWindow):
         s.send(pickle.dumps(mx))
 
     def update_msgs(self):
-        print("Entered in update message")
+        # print("Entered in update message")
         current = self.list_contact.currentItem().text()
         self.list_msgs.deleteLater()
         self.list_msgs = QListWidget(self.centralWidget)
@@ -67,7 +66,7 @@ class MainWindow(QMainWindow):
         self.list_msgs.show()
 
     def update_contact(self):
-        print("Entered in update contact function")
+        # print("Entered in update contact function")
         self.list_contact.deleteLater()
         self.list_contact = QListWidget(self.centralWidget)
         self.list_contact.setObjectName("list_contact")
@@ -79,10 +78,15 @@ class MainWindow(QMainWindow):
 class receive(QThread):
     hin = Signal()
     dhr = Signal()
-    def run(self, s):
+    def __init__(self, s):
+        QThread.__init__(self)
+        self.s = s
+    def run(self):
+        print("Is it even starting")
         while True:
             global contact_list
-            m = pickle.loads(s.recv(1024))
+            m = pickle.loads(self.s.recv(1024))
+            print("got new msg")
             if m.type == "new":
                 print("got msg for new connection")
                 contact_list.append(m.msg)
@@ -113,8 +117,9 @@ for i in contact_list:
 app = QApplication(sys.argv)
 window = MainWindow()
 window.resize(800,600)
-receive_thread = receive()
+receive_thread = receive(s)
 receive_thread.dhr.connect(window.update_contact)
 receive_thread.hin.connect(window.update_msgs)
+receive_thread.start()
 window.show()
 sys.exit(app.exec())

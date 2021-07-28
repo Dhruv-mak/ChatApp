@@ -51,8 +51,9 @@ while True:
     # Sending all the previous contacts
     sock.send(pickle.dumps(shared_contacts))
     shared_contacts.append(a.name)
-    ## sending broad cast to add new client to their contact_list
+    print("sending broad cast to add new client to their contact_list")
     for i in contacts:
+        print("for", i.name)
         d = msg()
         d.type = "new"
         d.msg = a.name
