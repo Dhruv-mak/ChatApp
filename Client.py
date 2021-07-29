@@ -51,11 +51,12 @@ class MainWindow(QMainWindow):
         ss = self.content.text()
         mx.msg = ss + ',' + current
         self.content.clear()
-        msgs[current].append(name + ": " +mx.msg)
+        msgs[current].append(name + ": " +mx.msg.split(',')[0])
         s.send(pickle.dumps(mx))
+        self.update_msgs()
 
     def update_msgs(self):
-        # print("Entered in update message")
+        print("Entered in update message")
         current = self.list_contact.currentItem().text()
         self.list_msgs.deleteLater()
         self.list_msgs = QListWidget(self.centralWidget)
@@ -73,6 +74,7 @@ class MainWindow(QMainWindow):
         self.list_contact.setGeometry(QRect(0, 10, 256, 541))
         for i in range(len(contact_list)):
             self.list_contact.addItem(contact_list[i])
+        self.list_contact.clicked.connect(self.update_msgs)
         self.list_contact.show()
 
 class receive(QThread):
@@ -82,19 +84,18 @@ class receive(QThread):
         QThread.__init__(self)
         self.s = s
     def run(self):
-        print("Is it even starting")
         while True:
             global contact_list
             m = pickle.loads(self.s.recv(1024))
             print("got new msg")
             if m.type == "new":
-                print("got msg for new connection")
+                # print("got msg for new connection")
                 contact_list.append(m.msg)
                 msgs[m.msg] = []
                 self.dhr.emit()
             else:
                 se, content = m.msg.split(':')
-                msgs[se].append(m.msg)
+                msgs[se].append(m.msg.split(',')[0])
                 print(m.msg)
                 self.hin.emit()
 
