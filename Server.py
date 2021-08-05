@@ -1,6 +1,9 @@
 import socket
 import threading
 import pickle
+import primitive_root as pr
+import getprime as gp
+
 class msg:
     def __init__(self):
         self.type = ""
@@ -18,17 +21,51 @@ def handle(a, sock, addr):
         maka = pickle.loads(sock.recv(1024))
         saki = maka.msg
         print(saki, "from ", addr)
-        saki, to = saki.split(',')
-        for i in contacts:
-            if i.name == to:
-                break
-            else:
-                print("INVALID NAME")
-        r = msg()
-        r.type = "msg"
-        r.msg = a.name + ": "+ saki
-        i.sock.send(pickle.dumps(r))
-        
+        if maka.type == "key" :
+            saki, to = saki.split(',')
+            print("\n Receiving key ")
+            # send,recv = maka.msg.split(',')
+            print(saki + " "+ to + "\n")
+            for i in contacts:
+                if i.name == to:
+                    break
+            r = msg()
+            r.type = "key2"
+            n = gp.funct()
+            g = pr.findPrimitive(n)
+            print('n : ',n,'     g : ',g,'\n')
+            saki = str(n)+":"+str(g)
+            r.msg = a.name +": "+saki
+            print(a.name + " "+i.name+"\n")
+            i.sock.send(pickle.dumps(r))
+            r.msg = i.name + ":"+saki
+            a.sock.send(pickle.dumps(r))
+        elif maka.type == "key3":
+            saki, to = saki.split(',')
+            print("\n exchanging key ")
+            print(saki + " " + to +"\n")
+            for i in contacts:
+                if i.name == to:
+                    break
+            r = msg()
+            r.type = "key3"
+            r.msg = a.name +": "+saki
+            print(a.name + " "+i.name + "\n")
+            i.sock.send(pickle.dumps(r))
+        else:
+            saki, to = saki.split(',')
+            for i in contacts:
+                if i.name == to:
+                    break
+                # else:
+                #     print("INVALID NAME")
+            r = msg()
+            r.type = "msg"
+            print(" AT server "+saki)
+            # r.msg = a.name + ":"+ saki
+            r.msg = saki
+            i.sock.send(pickle.dumps(r))
+            
 
 
 IP = "127.0.0.1"
